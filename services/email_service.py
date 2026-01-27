@@ -91,3 +91,51 @@ def send_offer_letter(candidate_name, candidate_email, job_title):
     The HIRE_OS Team
     """
     return send_email(candidate_email, subject, body)
+
+def send_meeting_invite(candidate_email, candidate_name, job_title, meeting_link, meeting_time):
+    """
+    Sends a Google Meet invitation for the final HR round.
+    """
+    subject = f"Final HR Interview Invitation - {job_title}"
+    
+    body = f"""
+    Dear {candidate_name},
+
+    Congratulations! You have successfully cleared our AI Technical Assessment. 
+    
+    We would like to invite you to the final Human HR Interview.
+
+    📅 Date & Time: {meeting_time}
+    🔗 Meeting Link: {meeting_link}
+
+    Please ensure you are in a quiet environment and have a stable internet connection.
+
+    Best regards,
+    The HIRE_OS Recruitment Team
+    """
+    
+    return send_email(candidate_email, subject, body)
+
+def send_offer_letter(candidate_email, candidate_name, job_title):
+    """
+    Sends the official Job Offer email.
+    """
+    subject = f"🎉 Job Offer: {job_title} at HIRE_OS"
+    
+    body = f"""
+    Dear {candidate_name},
+
+    We are delighted to offer you the position of {job_title} at HIRE_OS!
+
+    Your performance in both the AI Technical Assessment and the HR Interview was outstanding. We believe you will be a great addition to our team.
+
+    NEXT STEPS:
+    Please reply to this email within 48 hours to accept the offer.
+    
+    Welcome aboard!
+
+    Sincerely,
+    The HIRE_OS Team
+    """
+    
+    return send_email(candidate_email, subject, body)
