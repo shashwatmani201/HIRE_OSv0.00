@@ -6,11 +6,13 @@ from crewai import Agent, Task, Crew
 from crewai.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from pypdf import PdfReader
+from openai import OpenAI  # <--- Need this for DALL-E
 
 # Add parent directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.database_manager import get_db_connection
 from services.email_service import send_shortlist_email  # <--- Imported Email Service
+
 
 # --- 1. DEFINE TOOLS NATIVELY ---
 
@@ -238,3 +240,72 @@ def run_interview_evaluation(job_id):
 
     conn.close()
     return "\n".join(results_log) 
+
+
+def generate_viral_linkedin_post(job_title, requirements, description):
+    """
+    Uses GPT-4o to write a high-engagement LinkedIn post with the Apply Link.
+    """
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.7)
+    
+    # 🔗 DEFINE THE LINK (Change this if you deploy to the cloud later)
+    portal_link = "http://localhost:8501" 
+    
+    prompt = f"""
+    You are an expert Social Media Manager for a tech startup called HIRE_OS.
+    
+    Task: Write a viral, engaging, and professional LinkedIn post to hire a '{job_title}'.
+    
+    Context:
+    - Job Description: {description}
+    - Key Requirements: {requirements}
+    - Link to Apply: {portal_link}
+    
+    Guidelines:
+    1. Start with a strong "Hook" (e.g., Are you the Python wizard we need?).
+    2. Use bullet points for benefits.
+    3. Emphasize that the interview is AI-Automated (Instant feedback!).
+    4. **CRITICAL:** You MUST include the application link: {portal_link} clearly at the end.
+    5. Use emojis (🚀, 🔗) and hashtags.
+    
+    Output: Just the post text.
+    """
+    
+    response = llm.predict(prompt)
+    return response
+
+
+
+def generate_job_image(job_title, requirements):
+    """
+    Uses DALL-E 3 to generate a professional, tech-themed image for the job post.
+    Returns the image URL.
+    """
+    client = OpenAI() 
+
+    visual_prompt = f"""
+    A professional, futuristic, and vibrant digital illustration suitable for a LinkedIn job announcement post.
+    The central theme should visually represent the role of a '{job_title}'.
+    
+    Incorporate abstract visual elements related to these tech stacks: {requirements}. 
+    (e.g., If Python, show stylized snakes or code structures; if Cloud, show interconnected data centers).
+    
+    Style: Clean, modern tech art.
+    Color Palette: Professional deep blues, purples, and electric neon accents.
+    
+    Constraint: Do not include any actual text letters or words in the image itself.
+    """
+
+    try:
+        print(f"🎨 Generating image for {job_title}...")
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=visual_prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+        )
+        return response.data[0].url
+    except Exception as e:
+        print(f"❌ Image generation failed: {e}")
+        return "https://cdn.pixabay.com/photo/2018/05/08/08/44/artificial-intelligence-3382507_1280.jpg"

@@ -71,3 +71,23 @@ def add_candidate(job_id, name, email, resume_path):
 
 # Run table creation on import
 create_tables()
+
+def delete_job_permanently(job_id):
+    """
+    Deletes a job and ALL linked candidates from the database.
+    """
+    conn = get_db_connection()
+    try:
+        # 1. Delete all candidates linked to this job first (to prevent orphans)
+        conn.execute("DELETE FROM candidates WHERE job_id = ?", (job_id,))
+        
+        # 2. Delete the job itself
+        conn.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
+        
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error deleting job: {e}")
+        return False
+    finally:
+        conn.close()
