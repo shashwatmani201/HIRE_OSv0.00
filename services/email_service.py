@@ -2,43 +2,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
+from dotenv import load_dotenv
 
-# Configuration (Load from env vars or use defaults)
+# Load environment variables
+load_dotenv()
+
+# Configuration
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = os.getenv("SENDER_EMAIL", "hr@hireos.ai") 
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "mock_password")
-
-
-
-# ... (Keep your existing imports and send_email function) ...
-
-def send_shortlist_email(candidate_name, candidate_email, job_title):
-    """
-    Sends an email inviting the candidate to the AI Interview.
-    """
-    subject = f"Update on your application for {job_title} - HIRE_OS"
-    
-    body = f"""
-    Dear {candidate_name},
-
-    Great news! Your profile has been shortlisted for the {job_title} position at HIRE_OS.
-
-    We were impressed with your resume and would like to invite you to the next round: An automated AI Technical Interview.
-
-    NEXT STEPS:
-    1. Log in to the Candidate Portal: http://localhost:8501
-    2. Enter your email ({candidate_email}) to access the interview.
-    3. Complete the chat assessment.
-
-    Good luck!
-    
-    Best regards,
-    The HIRE_OS Recruitment Team
-    """
-    
-    # Reuse your existing send_email logic
-    return send_email(candidate_email, subject, body)
 
 def send_email(to_email, subject, body):
     """
@@ -71,24 +44,31 @@ def send_email(to_email, subject, body):
         print(f"❌ Email Failed: {e}")
         return False
 
-def send_offer_letter(candidate_name, candidate_email, job_title):
+# --- SPECIFIC EMAILS ---
+
+def send_shortlist_email(candidate_email, candidate_name, job_title):
     """
-    Constructs and sends the Offer Letter.
+    Sends the invite to the AI Interview Portal.
     """
-    subject = f"Offer of Employment: {job_title} at HIRE_OS"
+    subject = f"Update on your application for {job_title} - HIRE_OS"
+    
+    # Points to Port 8503/8502 (Candidate Portal) - Make sure this matches your running port!
+    portal_link = "http://localhost:8503"
+    
     body = f"""
     Dear {candidate_name},
 
-    We are pleased to offer you the position of {job_title} at HIRE_OS!
+    Great news! Your profile has been shortlisted for the {job_title} position at HIRE_OS.
 
-    Your technical interview results were impressive, and we believe you will be a great asset to the team.
+    We were impressed with your resume and would like to invite you to the next round: An automated AI Technical Interview.
 
-    Please reply to this email to discuss the start date and compensation details.
+    NEXT STEPS:
+    1. Log in to the Candidate Portal: {portal_link}
+    2. Enter your email ({candidate_email}) to access the interview.
+    3. Complete the chat assessment.
 
-    Welcome aboard!
-    
-    Sincerely,
-    The HIRE_OS Team
+    Good luck!
+    The HIRE_OS Recruitment Team
     """
     return send_email(candidate_email, subject, body)
 
@@ -102,18 +82,16 @@ def send_meeting_invite(candidate_email, candidate_name, job_title, meeting_link
     Dear {candidate_name},
 
     Congratulations! You have successfully cleared our AI Technical Assessment. 
-    
     We would like to invite you to the final Human HR Interview.
 
     📅 Date & Time: {meeting_time}
     🔗 Meeting Link: {meeting_link}
 
-    Please ensure you are in a quiet environment and have a stable internet connection.
+    Please ensure you are in a quiet environment.
 
     Best regards,
     The HIRE_OS Recruitment Team
     """
-    
     return send_email(candidate_email, subject, body)
 
 def send_offer_letter(candidate_email, candidate_name, job_title):
@@ -137,5 +115,26 @@ def send_offer_letter(candidate_email, candidate_name, job_title):
     Sincerely,
     The HIRE_OS Team
     """
+    return send_email(candidate_email, subject, body)
+
+def send_rejection_email(candidate_email, candidate_name, job_title):
+    """
+    Sends a polite, professional rejection email.
+    """
+    subject = f"Update on your application for {job_title} - HIRE_OS"
     
+    body = f"""
+    Dear {candidate_name},
+
+    Thank you for giving us the opportunity to consider your application for the {job_title} position at HIRE_OS.
+
+    We have reviewed your qualifications and experience. While your background is impressive, we have decided to move forward with other candidates who more closely match our current requirements for this specific role.
+
+    We will keep your resume in our database and may contact you if a suitable opening arises in the future.
+
+    We wish you the best in your job search.
+
+    Sincerely,
+    The HIRE_OS Recruitment Team
+    """
     return send_email(candidate_email, subject, body)

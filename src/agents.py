@@ -11,7 +11,7 @@ from openai import OpenAI  # <--- Need this for DALL-E
 # Add parent directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.database_manager import get_db_connection
-from services.email_service import send_shortlist_email  # <--- Imported Email Service
+from services.email_service import send_shortlist_email, send_rejection_email # <--- Imported Email Service
 
 
 # --- 1. DEFINE TOOLS NATIVELY ---
@@ -57,6 +57,8 @@ def create_screener_agent():
         llm=ChatOpenAI(model_name="gpt-4o", temperature=0)
     )
 
+
+
 def create_grader_agent():
     return Agent(
         role='Chief Technology Officer',
@@ -66,6 +68,8 @@ def create_grader_agent():
         verbose=True,
         llm=ChatOpenAI(model_name="gpt-4o", temperature=0)
     )
+
+
 
 # --- 3. ORCHESTRATION ---
 
@@ -140,17 +144,27 @@ def run_resume_screening(job_id):
         if new_status == "SHORTLISTED":
             print(f"📧 Sending Shortlist Email to {name}...")
             try:
-                send_shortlist_email(name, email, job['title'])
+                send_shortlist_email(email, name, job['title'])
                 results_log.append(f"{name}: {score} (SHORTLISTED & Emailed)")
             except Exception as e:
                 print(f"❌ Failed to send email: {e}")
                 results_log.append(f"{name}: {score} (SHORTLISTED - Email Failed)")
-        else:
-            results_log.append(f"{name}: {score} ({new_status})")
-        # ----------------------------------
+    
+        else: 
+            # --- NEW: SEND REJECTION EMAIL AUTOMATICALLY ---
+            print(f"📉 Rejection: Sending email to {name}...")
+            try:
+                send_rejection_email(email, name, job['title'])
+                results_log.append(f"{name}: {score} (REJECTED & Emailed)")
+            except Exception as e:
+                print(f"❌ Failed to send rejection email: {e}")
+                results_log.append(f"{name}: {score} (REJECTED - Email Failed)")
 
     conn.close()
     return "\n".join(results_log)
+
+
+
 
 def run_interview_evaluation(job_id):
     conn = get_db_connection()
@@ -249,7 +263,7 @@ def generate_viral_linkedin_post(job_title, requirements, description):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.7)
     
     # 🔗 DEFINE THE LINK (Change this if you deploy to the cloud later)
-    portal_link = "http://localhost:8501" 
+    portal_link = "http://localhost:8502" 
     
     prompt = f"""
     You are an expert Social Media Manager for a tech startup called HIRE_OS.
