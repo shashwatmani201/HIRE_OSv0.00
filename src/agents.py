@@ -263,7 +263,7 @@ def generate_viral_linkedin_post(job_title, requirements, description):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.7)
     
     # 🔗 DEFINE THE LINK (Change this if you deploy to the cloud later)
-    portal_link = "http://localhost:8502" 
+    portal_link = "https://hire-os-v0-apply-dashboard.streamlit.app" 
     
     prompt = f"""
     You are an expert Social Media Manager for a tech startup called HIRE_OS.
