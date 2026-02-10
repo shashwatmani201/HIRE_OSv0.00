@@ -53,7 +53,7 @@ def send_shortlist_email(candidate_email, candidate_name, job_title):
     subject = f"Update on your application for {job_title} - HIRE_OS"
     
     # Points to Port 8503/8502 (Candidate Portal) - Make sure this matches your running port!
-    portal_link = "http://localhost:8503"
+    portal_link = "https://hire-os-v0-interview-dashboard.streamlit.app"
     
     body = f"""
     Dear {candidate_name},
